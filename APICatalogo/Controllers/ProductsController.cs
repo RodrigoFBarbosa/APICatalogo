@@ -1,6 +1,7 @@
 ﻿using APICatalogo.Context;
 using APICatalogo.Migrations;
 using APICatalogo.Models;
+using APICatalogo.Repository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,36 +12,52 @@ namespace APICatalogo.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        // como eu tenho um um metodo na instancia especifica para product também preciso injetar ele
+        // como o repositororio especifico tambem implemente o repository generico, eu nao preciso instancia-lo aqui neste caso
+        private readonly IUnitOfWork _uof;
+        private readonly ILogger<ProductsController> _logger;
 
-        public ProductsController(AppDbContext context)
+        public ProductsController(ILogger<ProductsController> logger, IUnitOfWork uof)
         {
-            _context = context;
+
+            _logger = logger;
+            _uof = uof;
+        }
+
+        [HttpGet("products/{id}")]
+        public ActionResult<IEnumerable<Product>> GetProductsCategories(int id)
+        {
+            var products = _uof.ProductRepository.GetProductsByCategory(id);
+            if (products is null)
+                return NotFound();
+
+            return Ok(products);
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Product>> Get() // poderia utilizar List mas o IEnumerable é mais otimizado
-            //ActionResult permite retornar ou uma lista de produto ou todos os metodos suportados pelo ActionResult
+        public ActionResult<IEnumerable<Product>> Get()
+            
         {
-            var products = _context.Products.ToList();
+            var products = _uof.ProductRepository.GetAll();
 
             if (products is null)
             {
-                return NotFound(); //404
+                _logger.LogWarning($"");
+                return NotFound(); 
             }
 
-            return products;
+            return Ok(products);
         }
 
-        // retornar produto por Id
+        
         [HttpGet("{id:int}", Name = "GettingProduct")]
         public ActionResult<Product> Get(int id)
         {
-            var product = _context.Products.FirstOrDefault(p => p.ProductId == id);
-                // se nao encontrar retorna null
+            var product = _uof.ProductRepository.Get(p => p.ProductId == id);
 
             if (product is null)
             {
+                _logger.LogWarning($"Produto com id = {id} não encontrado...");
                 return NotFound("Product not found");
             }
 
@@ -51,41 +68,46 @@ namespace APICatalogo.Controllers
         public ActionResult Post(Product product)
         {
             if (product is null)
-                return BadRequest();
-            
-
-            _context.Products.Add(product); // adiciona na memoria
-            _context.SaveChanges(); // persiste os dados na tabela
+            {
+                _logger.LogWarning($"Dados inválidos...");
+                return BadRequest($"Dados inválidos...");
+            }
+                
+           var createdProduct =  _uof.ProductRepository.Create(product);
+            _uof.Commit();
             
             return new CreatedAtRouteResult("GettingProduct", 
-                new { id = product.ProductId }, product);
+                new { id = createdProduct.ProductId }, createdProduct);
         }
 
         [HttpPut("{id:int}")]
-        public ActionResult Put(int id, Product product)
+        public ActionResult<Product> Put(int id, Product product)
         {
             if (id != product.ProductId)
-                return BadRequest();
+            {
+                _logger.LogWarning($"Dados inválidos...");
+                return BadRequest($"Dados inválidos...");
+            }
 
-            _context.Entry(product).State = EntityState.Modified;
-            _context.SaveChanges();
-
+            _uof.ProductRepository.Update(product);
+            _uof.Commit();
             return Ok(product);
         }
 
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            var product = _context.Products.FirstOrDefault(p => p.ProductId == id);
-            //var product = _context.Products.Find(id);
+           var product = _uof.ProductRepository.Get(p => p.ProductId == id);
 
-            if ( product is null)
-                return NotFound("Product not found");
+            if (product is null)
+            {
+                _logger.LogWarning($"produto com id = {id} não encontrado...");
+                return NotFound($"produto com id = {id} não encontrado...");
+            }
 
-            _context.Products.Remove(product);
-            _context.SaveChanges();
-
-            return Ok(product);
+            var deletedProduct = _uof.ProductRepository.Delete(product);
+            _uof.Commit();
+            return Ok(deletedProduct);
 
 
         }
