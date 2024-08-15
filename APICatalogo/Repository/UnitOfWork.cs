@@ -13,12 +13,12 @@ namespace APICatalogo.Repository
             _context = context;
         }
         // to permitindo que a classe unit fornece acesso aos reps especificos sem ter q ficar criando varias instancias dos repositorios
-        // Lazy Loagind \/ usada para adiar a obtencao dos objetos ate que eles sejam realmente necessarios
+        // Lazy Loading \/ usada para adiar a obtencao dos objetos ate que eles sejam realmente necessarios
         public IProductRepository ProductRepository
         {
             get
             {
-                return _productRep = ProductRepository ?? new ProductRepository(_context);
+                return _productRep = _productRep ?? new ProductRepository(_context);
                 // mais didatico \/
                 // if (_productRep == null) 
                 //{
@@ -32,7 +32,7 @@ namespace APICatalogo.Repository
         {
             get
             {
-                return _categoryRep = CategoryRepository ?? new CategoryRepository(_context);
+                return _categoryRep = _categoryRep ?? new CategoryRepository(_context);
             }
         }
 

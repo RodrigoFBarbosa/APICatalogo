@@ -5,6 +5,7 @@ using APICatalogo.Models;
 using APICatalogo.Repository;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -93,6 +94,36 @@ namespace APICatalogo.Controllers
             return new CreatedAtRouteResult("GettingProduct", 
                 new { id = createdProductDto.ProductId }, createdProductDto);
         }
+
+        [HttpPatch("{id}/UpdatePartial")]
+        public ActionResult<ProductDTOUpdateResponse> Patch(int id, JsonPatchDocument<ProductDTOUpdateRequest> patchProductDTO)
+        {
+            if(patchProductDTO is null || id <= 0)
+                return BadRequest();
+
+            var product = _uof.ProductRepository.Get(p => p.ProductId == id);
+
+            if (product is null)
+                return NotFound();
+
+            var productUpdateRequest = _mapper.Map<ProductDTOUpdateRequest>(product);
+
+            patchProductDTO.ApplyTo(productUpdateRequest, ModelState);
+            //aplyto que irá aplicar as alterações parciais no patch
+
+            if(!ModelState.IsValid || TryValidateModel(productUpdateRequest)) 
+                return BadRequest(ModelState);
+
+            _mapper.Map(productUpdateRequest, product);
+            
+            _uof.ProductRepository.Update(product);
+            _uof.Commit();
+
+            return Ok(_mapper.Map<ProductDTOUpdateResponse>(product));
+
+        }
+
+
 
         [HttpPut("{id:int}")]
         public ActionResult<ProductDTO> Put(int id, ProductDTO productDto)
