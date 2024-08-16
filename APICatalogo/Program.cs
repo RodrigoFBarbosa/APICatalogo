@@ -1,11 +1,10 @@
 using APICatalogo.Context;
-using Npgsql.EntityFrameworkCore.PostgreSQL;
-using Microsoft.EntityFrameworkCore;
-using System.Text.Json.Serialization;
+using APICatalogo.DTOs.Mapping;
 using APICatalogo.Extensions;
 using APICatalogo.Filters;
 using APICatalogo.Repository;
-using APICatalogo.DTOs.Mapping;
+using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +18,7 @@ builder.Services.AddControllers(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles; //vai ignorar quando houver uma referencia ciclica
 }).AddNewtonsoftJson();
-        
+
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
