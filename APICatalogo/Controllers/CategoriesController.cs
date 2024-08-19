@@ -44,6 +44,19 @@ public class CategoriesController : ControllerBase
     {
         var categories = _uof.CategoryRepository.GetCategories(categoriesParameters);
 
+        return GetCategories(categories);
+    }
+
+    [HttpGet("filter/name/pagination")]
+    public ActionResult<IEnumerable<CategoryDTO>> GetCategoriesNameFilter([FromQuery] CategoriesNameFilter categoriesNameFilter)
+    {
+        var filteredCategories = _uof.CategoryRepository.GetCategoriesNameFilter(categoriesNameFilter);
+
+        return GetCategories(filteredCategories);
+    }
+
+    private ActionResult<IEnumerable<CategoryDTO>> GetCategories(PagedList<Category> categories)
+    {
         var metadata = new
         {
             categories.TotalCount,
