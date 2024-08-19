@@ -48,6 +48,18 @@ namespace APICatalogo.Controllers
         {
             var products = _uof.ProductRepository.GetProducts(productsParameters);
 
+            return GetProducts(products);
+        }
+
+        [HttpGet("filter/price/pagination")]
+        public ActionResult<IEnumerable<ProductDTO>> GetProductsPriceFilter([FromQuery] ProductsPriceFilter productsFilterParameters)
+        {
+            var products = _uof.ProductRepository.GetProductsPriceFilter(productsFilterParameters);
+            return GetProducts (products);
+        }
+
+        private ActionResult<IEnumerable<ProductDTO>> GetProducts(PagedList<Product> products)
+        {
             var metadata = new
             {
                 products.TotalCount,
@@ -55,14 +67,12 @@ namespace APICatalogo.Controllers
                 products.CurrentPage,
                 products.TotalPages,
                 products.HasNext,
-                products.HasPrevious,
+                products.HasPrevious
             };
 
-            Response.Headers.Append("X-pagination", JsonConvert.SerializeObject(metadata));
-
-            var productsDto = _mapper.Map<IEnumerable<ProductDTO>>(products);
-
-            return Ok(productsDto);
+            Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+            var produtosDto = _mapper.Map<IEnumerable<ProductDTO>>(products);
+            return Ok(produtosDto);
         }
 
         [HttpGet]
@@ -146,8 +156,6 @@ namespace APICatalogo.Controllers
             return Ok(_mapper.Map<ProductDTOUpdateResponse>(product));
 
         }
-
-
 
         [HttpPut("{id:int}")]
         public ActionResult<ProductDTO> Put(int id, ProductDTO productDto)
