@@ -27,9 +27,9 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<CategoryDTO>> Get()
+    public async Task<ActionResult<IEnumerable<CategoryDTO>>> Get()
     {
-        var categories =  _uof.CategoryRepository.GetAll();
+        var categories =  await _uof.CategoryRepository.GetAllAsync();
 
         if (categories is null)
             return NotFound("Não existem categorias...");
@@ -40,17 +40,17 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet("pagination")]
-    public ActionResult<IEnumerable<CategoryDTO>> Get([FromQuery] CategoriesParameters categoriesParameters)
+    public async Task<ActionResult<IEnumerable<CategoryDTO>>> Get([FromQuery] CategoriesParameters categoriesParameters)
     {
-        var categories = _uof.CategoryRepository.GetCategories(categoriesParameters);
+        var categories = await _uof.CategoryRepository.GetCategoriesAsync(categoriesParameters);
 
         return GetCategories(categories);
     }
 
     [HttpGet("filter/name/pagination")]
-    public ActionResult<IEnumerable<CategoryDTO>> GetCategoriesNameFilter([FromQuery] CategoriesNameFilter categoriesNameFilter)
+    public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetCategoriesNameFilter([FromQuery] CategoriesNameFilter categoriesNameFilter)
     {
-        var filteredCategories = _uof.CategoryRepository.GetCategoriesNameFilter(categoriesNameFilter);
+        var filteredCategories = await _uof.CategoryRepository.GetCategoriesNameFilterAsync(categoriesNameFilter);
 
         return GetCategories(filteredCategories);
     }
@@ -75,9 +75,9 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet("{id:int}", Name = "GettingCategory")]
-    public ActionResult<CategoryDTO> Get(int id)
+    public async Task<ActionResult<CategoryDTO>> Get(int id)
     {
-        var category = _uof.CategoryRepository.Get(c => c.CategoryId == id);
+        var category = await _uof.CategoryRepository.GetAsync(c => c.CategoryId == id);
 
         if (category is null)
         {
@@ -91,7 +91,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<CategoryDTO> Post(CategoryDTO categoryDto)
+    public async Task<ActionResult<CategoryDTO>> Post(CategoryDTO categoryDto)
     {
         if (categoryDto is null)
         {
@@ -102,7 +102,7 @@ public class CategoriesController : ControllerBase
         var category = categoryDto.ToCategory();
             
         var createdCategory = _uof.CategoryRepository.Create(category);
-        _uof.Commit(); // savechanges implementado na unit of work
+        await _uof.CommitAsync(); // savechanges implementado na unit of work
 
         var createdCategoryDto = createdCategory.ToCategoryDto();
 
@@ -111,7 +111,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    public ActionResult<CategoryDTO> Put(int id, CategoryDTO categoryDto)
+    public async Task<ActionResult<CategoryDTO>> Put(int id, CategoryDTO categoryDto)
     {
         if (id != categoryDto.CategoryId)
         {
@@ -122,7 +122,7 @@ public class CategoriesController : ControllerBase
         var category = categoryDto.ToCategory();
 
         var updatedCategory = _uof.CategoryRepository.Update(category);
-        _uof.Commit();
+        await _uof.CommitAsync();
 
         var updatedCategoryDto = updatedCategory.ToCategoryDto();
 
@@ -130,9 +130,9 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    public ActionResult<CategoryDTO> Delete(int id)
+    public async Task<ActionResult<CategoryDTO>> Delete(int id)
     {
-        var category = _uof.CategoryRepository.Get(c => c.CategoryId == id);
+        var category = await _uof.CategoryRepository.GetAsync(c => c.CategoryId == id);
 
         if (category is null)
         {
@@ -141,7 +141,7 @@ public class CategoriesController : ControllerBase
         }
 
         var deletedCategory = _uof.CategoryRepository.Delete(category);
-        _uof.Commit();
+        await _uof.CommitAsync();
 
         var deletedCategoryDto = deletedCategory.ToCategoryDto();
 

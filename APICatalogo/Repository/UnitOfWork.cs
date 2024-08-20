@@ -12,19 +12,13 @@ namespace APICatalogo.Repository
         {
             _context = context;
         }
-        // to permitindo que a classe unit fornece acesso aos reps especificos sem ter q ficar criando varias instancias dos repositorios
-        // Lazy Loading \/ usada para adiar a obtencao dos objetos ate que eles sejam realmente necessarios
+
+        // Lazy Loading 
         public IProductRepository ProductRepository
         {
             get
             {
                 return _productRep = _productRep ?? new ProductRepository(_context);
-                // mais didatico \/
-                // if (_productRep == null) 
-                //{
-                //    _productRep = new ProductRepository(_context);
-                //}
-                //return _productRep;
             }
         }
 
@@ -36,10 +30,9 @@ namespace APICatalogo.Repository
             }
         }
 
-        public void Commit()
+        public async Task CommitAsync()
         {
-            _context.SaveChanges();
-            // confirmar todas operacoes de modificacao, insercao, etc.
+            await _context.SaveChangesAsync();
         }
 
         //liberar recursos associados ao context

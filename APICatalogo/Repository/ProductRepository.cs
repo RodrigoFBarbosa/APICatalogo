@@ -13,23 +13,29 @@ public class ProductRepository : Repository<Product>, IProductRepository
         
     }
 
-    public PagedList<Product> GetProducts(ProductsParameters productsParameters)
+    public async Task<PagedList<Product>> GetProductsAsync(ProductsParameters productsParameters)
     {
-        var products = GetAll().OrderBy(p => p.ProductId).AsQueryable();
+        var products = await GetAllAsync();
 
-        var ordenedProducts = PagedList<Product>.ToPagedList(products, productsParameters.PageNumber, productsParameters.PageSize);
+        var ordenedProducts = products.OrderBy(p => p.ProductId).AsQueryable();
 
-        return ordenedProducts;
+        var result = PagedList<Product>.ToPagedList(ordenedProducts, productsParameters.PageNumber, productsParameters.PageSize);
+
+        return result;
     }
 
-    public IEnumerable<Product> GetProductsByCategory(int id)
+    public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(int id)
     {
-        return GetAll().Where(c => c.CategoryId == id);
+        var products = await GetAllAsync();
+
+        var productsCategory = products.Where(c => c.CategoryId == id);
+
+        return productsCategory;
     }
 
-    public PagedList<Product> GetProductsPriceFilter(ProductsPriceFilter productsFilterParameters)
+    public async Task<PagedList<Product>> GetProductsPriceFilterAsync(ProductsPriceFilter productsFilterParameters)
     {
-        var products = GetAll().AsQueryable();
+        var products = await GetAllAsync();
 
         if(productsFilterParameters.Price.HasValue && !string.IsNullOrEmpty(productsFilterParameters.PriceCriteria))
         {
@@ -47,7 +53,7 @@ public class ProductRepository : Repository<Product>, IProductRepository
             }
         }
 
-        var filteredProducts = PagedList<Product>.ToPagedList(products, productsFilterParameters.PageNumber, productsFilterParameters.PageSize);
+        var filteredProducts = PagedList<Product>.ToPagedList(products.AsQueryable(), productsFilterParameters.PageNumber, productsFilterParameters.PageSize);
 
         return filteredProducts;
     }
