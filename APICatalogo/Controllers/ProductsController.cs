@@ -37,7 +37,7 @@ namespace APICatalogo.Controllers
             var products = await _uof.ProductRepository.GetProductsByCategoryAsync(id);
             if (products is null)
                 return NotFound();
-         // var destino = _mapper.Map<Destino>(origem);
+     
             var productsDto = _mapper.Map<IEnumerable<ProductDTO>>(products);
 
             return Ok(productsDto);
