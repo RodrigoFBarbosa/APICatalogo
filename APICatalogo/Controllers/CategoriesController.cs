@@ -1,14 +1,10 @@
-﻿using APICatalogo.Context;
-using APICatalogo.DTOs;
+﻿using APICatalogo.DTOs;
 using APICatalogo.DTOs.Mapping;
-using APICatalogo.Filters;
-using APICatalogo.Migrations;
 using APICatalogo.Models;
 using APICatalogo.Pagination;
 using APICatalogo.Repository;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace APICatalogo.Controllers;
@@ -27,6 +23,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<IEnumerable<CategoryDTO>>> Get()
     {
         var categories =  await _uof.CategoryRepository.GetAllAsync();
