@@ -27,6 +27,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost]
+    [Route("login")]
 
     public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
